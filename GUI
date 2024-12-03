@@ -1,0 +1,444 @@
+import random
+from tkinter import *
+from tkinter import messagebox
+import random,os,smtplib
+
+root=Tk()
+root.title('Baked @ 420')
+root.geometry('1270x685')
+root.iconbitmap('icon.ico')
+#Functionality Part*******************************************************************************************
+orderNumber=random.randint(250,999)
+if not os.path.exists('bills'):
+    os.mkdir('bills')
+
+def search():
+    for i in os.listdir('bills/'):
+        if i.split('.')[0]==OderNumberEntry.get():
+            f=open(f'bills/{i}','r')
+            textArea.delete(1.0,END)
+            for data in f:
+                textArea.insert(END,data)
+            f.close()
+            break
+    else:
+        messagebox.showerror('Error','Invalid order number:')
+def sendEmail():
+    def sendGmail():
+        try:
+            ob=smtplib.SMTP('smtp.gmail.com',587)
+            ob.starttls()
+            #ob.login('capstonebakery@gmail.com','hszi vvlw jwvj elir')
+            ob.login('capstonebakery@gmail.com', 'zgym mqzi fsss zpst')
+            message=email_textArea.get(1.0,END)
+            recip_address=recieverEntry.get()
+            ob.sendmail('capstonebakery@gmail.com',recieverEntry.get(),message)
+            ob.quit()
+            messagebox.showinfo('success','email successfully sent')
+        except:
+            messagebox.showerror('Error','Error 3405 mismatch')
+
+    if textArea.get(1.0,END)=='\n':
+        messagebox.showerror('Error','Nothing to send')
+    else:
+        root1=Toplevel()
+        root1.title('SendEmail')
+        root1.config(bg='gray')
+        root1.resizable(0,0)
+
+        #senderFrame=LabelFrame(root1,text='SENDER', font=('arial',16,'bold'))
+        #senderFrame.grid(row=0,column=0,padx=40,pady=20)
+
+        #senderLabel=Label(senderFrame,text="Sender's Email",font=('arial', 14,'bold'))
+        #senderLabel.grid(row=0,column=0)
+        #senderEntry=Entry(senderFrame,font=('arial',14,'bold'),bd=2,width=23,relief=RIDGE)
+        #senderEntry.grid(row=0,column=1,padx=10,pady=6)
+
+        #passwordLabel = Label(senderFrame, text="Password", font=('arial', 14, 'bold'))
+        #passwordLabel.grid(row=1, column=0)
+        #passwordEntry = Entry(senderFrame, font=('arial', 14, 'bold'), bd=2, width=23, relief=RIDGE,show='*')
+        #passwordEntry.grid(row=1, column=1, padx=10, pady=6)
+
+        recipFrame = LabelFrame(root1, text='RECIPIENT', font=('arial', 16, 'bold'))
+        recipFrame.grid(row=0, column=0,padx=40,pady=20)
+
+        recieverLabel = Label(recipFrame, text="Email Address", font=('arial', 14, 'bold'))
+        recieverLabel.grid(row=0, column=0)
+        recieverEntry = Entry(recipFrame, font=('arial', 14, 'bold'), bd=2, width=23, relief=RIDGE)
+        recieverEntry.grid(row=0, column=1, padx=10, pady=6)
+
+        messageLabel = Label(recipFrame, text="Message", font=('arial', 14, 'bold'))
+        messageLabel.grid(row=1, column=0,padx=10,pady=8)
+
+        email_textArea=Text(recipFrame, font=('arial',14,'bold'),bd=2,relief=SUNKEN, width=42, height=11)
+        email_textArea.grid(row=2,column=0,columnspan=2)
+        email_textArea.delete(1.0,END)
+        email_textArea.insert(END,textArea.get(1.0,END).replace('-','').replace('\t\t\t','\t'))
+
+        sendButton=Button(root1, text='send',font=('arial',16,'bold'),width=15,command=lambda:sendGmail())
+        sendButton.grid(row=2,column=0,pady=20)
+
+
+
+        root1.mainloop()
+
+
+def save_trans():
+    result=messagebox.askyesno('Confirm: Do you want to submit this order?')
+    if result:
+        bill_content=textArea.get(1.0,END)
+        file=open(f'bills/{orderNumber}.txt','w')
+        file.write(bill_content)
+        file.close()
+        messagebox.showinfo('Confirmed',f'Order# {orderNumber} is saved successfully')
+
+def billArea():
+    if nameEntry.get()=='' or  phoneEntry.get()=='':
+        messagebox.showerror('Error 1049','Customer information is Required')
+    elif cakeEntry.get()=='' and ccEntry.get()=='' and cpEntry.get()=='' and cookieEntry.get()=='':
+        messagebox.showerror('Error 1201','No Products have been selected')
+    elif cakeEntry.get()=='0' and ccEntry.get()=='0' and cpEntry.get()=='0' and cookieEntry.get()=='0':
+        messagebox.showerror('Error 1201', 'No Products have been selected')
+    else:
+        textArea.delete(1.0,END)
+        textArea.insert(END,'\n\t\t\tThank you ' + nameEntry.get() + ' \n')
+        textArea.insert(END, '\t\t\tPhone#: ' + phoneEntry.get() + ' \n')
+        textArea.insert(END,f'\t\t\tOrder Number:{orderNumber}\n\t\t\tSuccessfully submitted\n')
+        textArea.insert(END,'--------------------------------------------------------------------')
+        textArea.insert(END, '\nItem')
+        textArea.insert(END, '\t\t\t\t\t\tQty: ')
+        textArea.insert(END, '\t\tPrice\n')
+        textArea.insert(END, '-------------------------------------------------------------------\n')
+
+        cakePrice = int(cakeEntry.get()) * 12.99
+        cupcakePrice = int(ccEntry.get()) * 3.99
+        cakePopPrice = int(cpEntry.get()) * 2.99
+        cookiePrice = int(cookieEntry.get()) * 1.99
+        totalPrice = cakePrice + cupcakePrice + cakePopPrice + cookiePrice
+        formatted = "{:.2f}".format(totalPrice)
+        bakedGoodsPriceEntry.delete(0, END)
+        bakedGoodsPriceEntry.insert(0, formatted)
+
+        if cakeEntry.get() != '' and cakeEntry.get() != '0':
+            cakeFlavor = cake_var.get()
+            cakeIcing = cakeIcing_var.get()
+            textArea.insert(END,cakeFlavor + ' Cake w/' + cakeIcing+' icing')
+            textArea.insert(END,f'\t\t\t\t\t\t{cakeEntry.get()}\t\t{cakePrice}\n')
+            textArea.insert(END,'---------------------------------------------------------------------\n')
+
+        if ccEntry.get() != '' and ccEntry.get() != '0':
+            ccFlavor = cc_var.get()
+            ccIcing = ccIcing_var.get()
+            textArea.insert(END, ccFlavor + ' Cupcake w/' + ccIcing + ' icing')
+            textArea.insert(END, f'\t\t\t\t\t\t{ccEntry.get()}\t\t{cupcakePrice}\n')
+            textArea.insert(END, '---------------------------------------------------------------------\n')
+
+        if cpEntry.get() != '' and cpEntry.get() != '0':
+            cpFlavor = cp_var.get()
+            cpIcing = cpIcing_var.get()
+            textArea.insert(END, cpFlavor + ' CakePop w/' + cpIcing + ' icing')
+            textArea.insert(END, f'\t\t\t\t\t\t{cpEntry.get()}\t\t{cakePopPrice}\n')
+            textArea.insert(END, '---------------------------------------------------------------------\n')
+
+        if cookieEntry.get() != '' and cookieEntry.get() != '0':
+            cookieFlavor = cookie_var.get()
+            cookieIcing = cookieIcing_var.get()
+            textArea.insert(END, cookieFlavor + ' cookie w/' + cookieIcing + ' icing')
+            textArea.insert(END, f'\t\t\t\t\t\t{cookieEntry.get()}\t\t{cookiePrice}\n')
+            textArea.insert(END, '---------------------------------------------------------------------\n')
+    textArea.insert(END,f'Total:{totalPrice}\n')
+    save_trans()
+
+def verify():
+    global totalPrice
+    cakePrice=int(cakeEntry.get())*12.99
+    cupcakePrice = int(ccEntry.get()) * 3.99
+    cakePopPrice = int(cpEntry.get()) * 2.99
+    cookiePrice = int(cookieEntry.get()) * 1.99
+    totalPrice = cakePrice + cupcakePrice + cakePopPrice + cookiePrice
+    formatted = "{:.2f}".format(totalPrice)
+    bakedGoodsPriceEntry.delete(0,END)
+    bakedGoodsPriceEntry.insert(0,formatted)
+
+    textArea.delete(1.0,END)
+    textArea.insert(END,'\n\nAdded to Cart\n')
+
+    if cakeEntry.get() != '' and cakeEntry.get() != '0':
+        textArea.insert(END,'\nSingle Layer Cake')
+        textArea.insert(END,'\nQty: ')
+        textArea.insert(END,cakeEntry.get())
+        cakeFlavor = cake_var.get()
+        textArea.insert(END,'\nCake Flavor: '+ cakeFlavor)
+        cakeIcing= cakeIcing_var.get()
+        textArea.insert(END,'\nIcing Flavor: ' + cakeIcing)
+
+    if ccEntry.get() != '' and ccEntry.get() != '0':
+        textArea.insert(END, '\n\nCupcakes')
+        textArea.insert(END,'\nQty: ')
+        textArea.insert(END,ccEntry.get())
+        ccFlavor = cc_var.get()
+        textArea.insert(END,'\nCupcake Flavor: '+ ccFlavor)
+        ccIcing= ccIcing_var.get()
+        textArea.insert(END,'\nIcing Flavor: ' + ccIcing)
+
+    if cpEntry.get() != '' and cpEntry.get() != '0':
+        textArea.insert(END, '\n\nCake Pops')
+        textArea.insert(END,'\nQty: ')
+        textArea.insert(END,cpEntry.get())
+        cpFlavor = cp_var.get()
+        textArea.insert(END,'\nCake Pop Flavor: '+ cpFlavor)
+        cpIcing= cpIcing_var.get()
+        textArea.insert(END,'\nIcing Flavor: ' + cpIcing)
+
+    if cookieEntry.get() != '' and cookieEntry.get() != '0':
+        textArea.insert(END, '\n\nCookies')
+        textArea.insert(END,'\nQty: ')
+        textArea.insert(END,cookieEntry.get())
+        cookieFlavor = cookie_var.get()
+        textArea.insert(END,'\nCookie Flavor: '+ cookieFlavor)
+        cookieIcing= cookieIcing_var.get()
+        textArea.insert(END,'\nIcing Flavor: ' + cookieIcing)
+
+#GUI Part******************************************************************************************************
+headingLabel=Label(root,text='Order Entry',font=('times new roman',30,'bold'),bg='royalblue',
+                   fg='grey',bd=12,relief=GROOVE)
+headingLabel.pack(fill=X)
+
+customer_details_frame=LabelFrame(root,text='Customer Details',font=('times new roman',15,'bold'),
+                                  bg='royalblue1',fg='black', bd=8, relief=GROOVE)
+customer_details_frame.pack(fill=X)
+
+nameLabel=Label(customer_details_frame,text='Name',font=('times new roman',15,'bold'),bg='royalblue1')
+nameLabel.grid(row=0,column=0,padx=20, pady=2)
+nameEntry=Entry(customer_details_frame,font=('arial',15,'bold'),bd=7,width=18)
+nameEntry.grid(row=0,column=1,padx=8)
+
+phoneLabel=Label(customer_details_frame,text='Phone',font=('times new roman',15,'bold'),bg='royalblue1')
+phoneLabel.grid(row=0,column=2,padx=20, pady=2)
+phoneEntry=Entry(customer_details_frame,font=('arial',15,'bold'),bd=7,width=18)
+phoneEntry.grid(row=0,column=3,padx=8)
+
+OderNumberLabel=Label(customer_details_frame,text='Order Number',font=('times new roman',15,'bold'),bg='royalblue1')
+OderNumberLabel.grid(row=0,column=4,padx=20, pady=2)
+OderNumberEntry=Entry(customer_details_frame,font=('arial',15,'bold'),bd=7,width=18)
+OderNumberEntry.grid(row=0,column=5,padx=8)
+
+searchButton=Button(customer_details_frame,text='SEARCH',font=('arial',12,'bold'),bd=7,width=10,command=lambda:search())
+searchButton.grid(row=0,column=6,padx=20,pady=8)
+#***********************cakes*************************************
+productsFrame=Frame(root)
+productsFrame.pack()
+
+bakedGoodsFrame=LabelFrame(productsFrame,text='Baked Goods',font=('times new roman',15,'bold'),bg='peachpuff2',fg='grey', bd=8, relief=GROOVE)
+bakedGoodsFrame.grid(row=0,column=0,pady=10)
+
+cakeLabel=Label(bakedGoodsFrame,text='CAKES',font=('times new roman',15,'bold'),bg='peachpuff2')
+cakeLabel.grid(row=0,column=0,pady=9,padx=10, sticky='w')
+cakeEntry=Entry(bakedGoodsFrame,font=('times new roman',15,'bold'),width=10,bd=5)
+cakeEntry.insert(0,0)
+cakeEntry.grid(row=0,column=1)
+
+ccLabel=Label(bakedGoodsFrame,text='CUPCAKES',font=('times new roman',15,'bold'),bg='peachpuff2')
+ccLabel.grid(row=1,column=0,pady=9,padx=10,sticky='w')
+ccEntry=Entry(bakedGoodsFrame,font=('times new roman',15,'bold'),width=10,bd=5)
+ccEntry.insert(0,0)
+ccEntry.grid(row=1,column=1)
+
+cpLabel=Label(bakedGoodsFrame,text='CAKEPOPS',font=('times new roman',15,'bold'),bg='peachpuff2')
+cpLabel.grid(row=2,column=0,pady=9,padx=10,sticky='w')
+cpEntry=Entry(bakedGoodsFrame,font=('times new roman',15,'bold'),width=10,bd=5)
+cpEntry.insert(0,0)
+cpEntry.grid(row=2,column=1)
+
+cookieLabel=Label(bakedGoodsFrame,text='COOKIES',font=('times new roman',15,'bold'),bg='peachpuff2')
+cookieLabel.grid(row=3,column=0,pady=9,padx=10,sticky='w')
+cookieEntry=Entry(bakedGoodsFrame,font=('times new roman',15,'bold'),width=10,bd=5)
+cookieEntry.insert(0,0)
+cookieEntry.grid(row=3,column=1)
+#*******************************Flavors*****************************************************************
+flavorFrame=LabelFrame(productsFrame,text='Flavor',font=('times new roman',15,'bold'),bg='peachpuff2',fg='grey', bd=8, relief=GROOVE)
+flavorFrame.grid(row=0,column=2,pady=10)
+
+cakeFlavorLabel=Label(flavorFrame,text='Flavor',font=('times new roman',15,'bold'),bg='peachpuff2')
+cakeFlavorLabel.grid(row=0,column=0,pady=9,padx=10, sticky='w')
+
+OPTIONS= ["Vanilla",
+          "Chocolate",
+          "German Chocolate",
+          "Strawberry",
+          "Birthday",
+          "Red_Velvet",
+          "Carrot",
+          "Almond"]
+cake_var = StringVar()
+cake_var.set(OPTIONS[0])
+cakeFlavorEntry = OptionMenu(flavorFrame, cake_var, *OPTIONS)
+#cakeFlavorEntry=Entry(flavorFrame,font=('times new roman',15,'bold'),width=10,bd=5)
+#cakeFlavorEntry.insert(0,0)
+cakeFlavorEntry.grid(row=0,column=1)
+
+ccFlavorLabel=Label(flavorFrame,text='Flavor',font=('times new roman',15,'bold'),bg='peachpuff2')
+ccFlavorLabel.grid(row=1,column=0,pady=9,padx=10,sticky='w')
+OPTIONS =["Vanilla",
+          "Chocolate",
+          "German Chocolate",
+          "Strawberry",
+          "Birthday",
+          "Red_Velvet",
+          "Carrot",
+          "Almond"]
+cc_var = StringVar(flavorFrame)
+cc_var.set(OPTIONS[0])
+ccFlavorEntry = OptionMenu(flavorFrame, cc_var, *OPTIONS)
+#ccFlavorEntry=Entry(flavorFrame,font=('times new roman',15,'bold'),width=10,bd=5)
+#ccFlavorEntry.insert(0,0)
+ccFlavorEntry.grid(row=1,column=1)
+
+cpFlavorLabel=Label(flavorFrame,text='Flavor',font=('times new roman',15,'bold'),bg='peachpuff2')
+cpFlavorLabel.grid(row=2,column=0,pady=9,padx=10,sticky='w')
+OPTIONS =["Vanilla",
+          "Chocolate",
+          "German Choc",
+          "Strawberry",
+          "Birthday",
+          "Red_Velvet",
+          "Carrot",
+          "Almond"]
+cp_var = StringVar(flavorFrame)
+cp_var.set(OPTIONS[0])
+cpFlavorEntry = OptionMenu(flavorFrame, cp_var, *OPTIONS)
+#cpFlavorEntry=Entry(flavorFrame,font=('times new roman',15,'bold'),width=10,bd=5)
+#cpFlavorEntry.insert(0,0)
+cpFlavorEntry.grid(row=2,column=1)
+
+cookieFlavorLabel=Label(flavorFrame,text='Flavor',font=('times new roman',15,'bold'),bg='peachpuff2')
+cookieFlavorLabel.grid(row=3,column=0,pady=9,padx=10,sticky='w')
+#cookieFlavorEntry=Entry(flavorFrame,font=('times new roman',15,'bold'),width=10,bd=5)
+OPTIONS =["Vanilla",
+          "Chocolate",
+          "German Chocolate",
+          "Strawberry",
+          "Birthday",
+          "Red_Velvet",
+          "Carrot",
+          "Almond"]
+cookie_var = StringVar(flavorFrame)
+cookie_var.set(OPTIONS[0])
+cookieFlavorEntry = OptionMenu(flavorFrame, cookie_var, *OPTIONS)
+#cookieFlavorEntry.insert(0,0)
+cookieFlavorEntry.grid(row=3,column=1)
+#***********************************icing**************************************************************
+icingFrame=LabelFrame(productsFrame,text='Icing',font=('times new roman',15,'bold'),bg='peachpuff2',fg='grey', bd=8, relief=GROOVE)
+icingFrame.grid(row=0,column=3,pady=10)
+
+cakeIcingLabel=Label(icingFrame,text='Icing',font=('times new roman',15,'bold'),bg='peachpuff2')
+cakeIcingLabel.grid(row=0,column=0,pady=9,padx=10, sticky='w')
+OPTIONS= ["Vanilla",
+          "Chocolate",
+          "German Chocolate",
+          "Strawberry",
+          "Birthday",
+          "Red_Velvet",
+          "Carrot",
+          "Almond"]
+cakeIcing_var = StringVar(icingFrame)
+cakeIcing_var.set(OPTIONS[0])
+cakeIcingEntry = OptionMenu(icingFrame, cakeIcing_var, *OPTIONS)
+#cakeIcingEntry=Entry(icingFrame,font=('times new roman',15,'bold'),width=10,bd=5)
+#cakeIcingEntry.insert(0,0)
+cakeIcingEntry.grid(row=0,column=1)
+
+ccIcingLabel=Label(icingFrame,text='Icing',font=('times new roman',15,'bold'),bg='peachpuff2')
+ccIcingLabel.grid(row=1,column=0,pady=9,padx=10,sticky='w')
+OPTIONS= ["Vanilla",
+          "Chocolate",
+          "German Chocolate",
+          "Strawberry",
+          "Birthday",
+          "Red_Velvet",
+          "Carrot",
+          "Almond"]
+ccIcing_var = StringVar(icingFrame)
+ccIcing_var.set(OPTIONS[0])
+ccIcingEntry = OptionMenu(icingFrame, ccIcing_var, *OPTIONS)
+#ccIcingEntry=Entry(icingFrame,font=('times new roman',15,'bold'),width=10,bd=5)
+#ccIcingEntry.insert(0,0)
+ccIcingEntry.grid(row=1,column=1)
+
+cpIcingLabel=Label(icingFrame,text='Icing',font=('times new roman',15,'bold'),bg='peachpuff2')
+cpIcingLabel.grid(row=2,column=0,pady=9,padx=10,sticky='w')
+OPTIONS= ["Vanilla",
+          "Chocolate",
+          "German Chocolate",
+          "Strawberry",
+          "Birthday",
+          "Red_Velvet",
+          "Carrot",
+          "Almond"]
+cpIcing_var = StringVar(icingFrame)
+cpIcing_var.set(OPTIONS[0])
+cpIcingEntry = OptionMenu(icingFrame, cpIcing_var, *OPTIONS)
+
+#cpIcingEntry=Entry(icingFrame,font=('times new roman',15,'bold'),width=10,bd=5)
+#cpIcingEntry.insert(0,0)
+cpIcingEntry.grid(row=2,column=1)
+
+cookieIcingLabel=Label(icingFrame,text='Icing',font=('times new roman',15,'bold'),bg='peachpuff2')
+cookieIcingLabel.grid(row=3,column=0,pady=9,padx=10,sticky='w')
+OPTIONS= ["None",
+          "Vanilla",
+          "Chocolate",
+          "German Chocolate",
+          "Strawberry",
+          "Birthday",
+          "Red_Velvet",
+          "Carrot",
+          "Almond"]
+cookieIcing_var = StringVar(icingFrame)
+cookieIcing_var.set(OPTIONS[0])
+cookieIcingEntry = OptionMenu(icingFrame, cookieIcing_var, *OPTIONS)
+#cookieIcingEntry=Entry(icingFrame,font=('times new roman',15,'bold'),width=10,bd=5)
+#cookieIcingEntry.insert(0,0)
+cookieIcingEntry.grid(row=3,column=1)
+#*************************************************************************************
+
+billFrame=Frame(productsFrame,bd=8,relief=GROOVE)
+billFrame.grid(row=0,column=4,padx=13)
+
+billAreaLabel=Label(billFrame,text='Preview Area', font=('times new roman',15,'bold'),bd=7,relief=GROOVE)
+billAreaLabel.pack(fill=X)
+
+scrollBar=Scrollbar(billFrame,orient=VERTICAL)
+scrollBar.pack(side=RIGHT,fill=Y)
+
+textArea=Text(billFrame,height=10,width=70,yscrollcommand=scrollBar.set)
+textArea.pack()
+scrollBar.config(command=textArea.yview)
+
+billMenuFrame=LabelFrame(root,text='Total Area',font=('times new roman',15,'bold'),bg='grey',fg='black', bd=8, relief=GROOVE)
+billMenuFrame.pack(fill=X)
+
+bakedGoodsPriceLabel=Label(billMenuFrame,text='Running Total', font=('times new roman',15,'bold'))
+bakedGoodsPriceLabel.grid(row=0,column=0,pady=9,padx=10,sticky='w')
+bakedGoodsPriceEntry=Entry(billMenuFrame,font=('times new roman',15,'bold'),width=10,bd=5)
+bakedGoodsPriceEntry.grid(row=0,column=1,pady=9,padx=10)
+
+buttonFrame=Frame(billMenuFrame,bd=8,relief=GROOVE)
+buttonFrame.grid(row=0,column=4,rowspan=3)
+
+totalButton=Button(buttonFrame, text='AddtoCart',font=('arial',16,'bold'), bg='azure',fg='grey', bd=8,width=8,command=verify)
+totalButton.grid(row=0,column=0,pady=20,padx=5)
+
+billButton=Button(buttonFrame, text='Checkout',font=('arial',16,'bold'), bg='azure',fg='grey', bd=8,width=8,command=billArea)
+billButton.grid(row=0,column=1,pady=20,padx=5)
+
+emailButton=Button(buttonFrame, text='Submit',font=('arial',16,'bold'), bg='azure',fg='grey', bd=8,width=8,command= lambda:sendEmail())
+emailButton.grid(row=0,column=2,pady=20,padx=5)
+
+printButton=Button(buttonFrame, text='Print',font=('arial',16,'bold'), bg='azure',fg='grey', bd=8,width=8)
+printButton.grid(row=0,column=3,pady=20,padx=5)
+
+clearButton=Button(buttonFrame, text='Clear',font=('arial',16,'bold'), bg='azure',fg='grey', bd=8,width=8)
+clearButton.grid(row=0,column=4,pady=20,padx=5)
+
+root.mainloop()
